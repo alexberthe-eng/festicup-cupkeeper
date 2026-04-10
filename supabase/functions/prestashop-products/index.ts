@@ -1,5 +1,8 @@
 // PrestaShop products edge function
-import { corsHeaders } from "@supabase/supabase-js/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 async function fetchPS(baseUrl: string, apiKey: string, resource: string, params: Record<string, string> = {}) {
   const url = new URL(`${baseUrl}/api/${resource}`);
