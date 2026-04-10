@@ -222,6 +222,8 @@ export const products: Product[] = [
 ];
 
 export const TVA_RATE = 0.21;
+export const QUOTE_THRESHOLD = 500;
+export const QUOTE_WARNING_PERCENT = 0.8;
 
 export function getBasePrice(product: Product): number {
   return product.priceTiers[0].priceHT;
@@ -237,4 +239,23 @@ export function formatPrice(price: number): string {
 
 export function getPriceTTC(priceHT: number): number {
   return priceHT * (1 + TVA_RATE);
+}
+
+export function getPriceForQty(product: Product, qty: number): number {
+  for (let i = product.priceTiers.length - 1; i >= 0; i--) {
+    if (qty >= product.priceTiers[i].minQty) return product.priceTiers[i].priceHT;
+  }
+  return product.priceTiers[0].priceHT;
+}
+
+export function isAboveQuoteThreshold(qty: number): boolean {
+  return qty >= QUOTE_THRESHOLD;
+}
+
+export function isNearQuoteThreshold(qty: number): boolean {
+  return qty >= QUOTE_THRESHOLD * QUOTE_WARNING_PERCENT && qty < QUOTE_THRESHOLD;
+}
+
+export function findProductBySlug(slug: string): Product | undefined {
+  return products.find((p) => p.slug === slug);
 }
