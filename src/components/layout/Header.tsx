@@ -56,9 +56,9 @@ const Header = () => {
           </Link>
           <Link to="/panier" className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label="Panier">
             <ShoppingBag className="w-[18px] h-[18px]" />
-            {cartCount > 0 && (
+            {itemCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-festicup-gold text-primary-foreground text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                {cartCount}
+                {itemCount}
               </span>
             )}
           </Link>
