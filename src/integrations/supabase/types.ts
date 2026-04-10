@@ -32,6 +32,7 @@ export type Database = {
           total_ht: number
           total_ttc: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -50,6 +51,7 @@ export type Database = {
           total_ht?: number
           total_ttc?: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -68,6 +70,40 @@ export type Database = {
           total_ht?: number
           total_ttc?: number
           updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          company: string | null
+          created_at: string
+          default_address: Json | null
+          display_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          default_address?: Json | null
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          default_address?: Json | null
+          display_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
