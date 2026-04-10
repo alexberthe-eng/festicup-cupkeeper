@@ -38,7 +38,7 @@ function extractLang(field: any): string {
 
 async function getProducts(baseUrl: string, apiKey: string) {
   const data = await fetchPS(baseUrl, apiKey, "products", {
-    "display": "[id,name,description_short,price,reference,active,id_category_default,associations]",
+    "display": "[id,name,description_short,price,reference,active,id_category_default,id_default_image]",
     "filter[active]": "1",
   });
 
