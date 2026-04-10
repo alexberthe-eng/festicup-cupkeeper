@@ -1,3 +1,4 @@
+// PrestaShop products edge function
 import { corsHeaders } from "@supabase/supabase-js/cors";
 
 const PRESTASHOP_API_KEY = Deno.env.get("PRESTASHOP_API_KEY");
