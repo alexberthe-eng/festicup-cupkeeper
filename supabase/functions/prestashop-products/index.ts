@@ -1,4 +1,4 @@
-// PrestaShop products edge function
+// PrestaShop products edge function v2
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
