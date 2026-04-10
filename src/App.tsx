@@ -11,6 +11,8 @@ import Location from "./pages/Location.tsx";
 import ProductDetail from "./pages/ProductDetail.tsx";
 import Devis from "./pages/Devis.tsx";
 import Panier from "./pages/Panier.tsx";
+import Checkout from "./pages/Checkout.tsx";
+import Confirmation from "./pages/Confirmation.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
               <Route path="/produits/:slug" element={<ProductDetail />} />
               <Route path="/devis" element={<Devis />} />
               <Route path="/panier" element={<Panier />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/confirmation" element={<Confirmation />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
