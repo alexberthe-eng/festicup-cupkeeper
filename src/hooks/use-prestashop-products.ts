@@ -140,9 +140,21 @@ export function usePrestashopProducts() {
 export function useCatalogProducts() {
   const { data: psProducts, isLoading, isError } = usePrestashopProducts();
 
-  if (isLoading) return { products: mockProducts, isLoading: true, isLive: false };
-  if (isError || !psProducts?.length) return { products: mockProducts, isLoading: false, isLive: false };
+  if (isLoading) return { products: mockProducts, isLoading: true, isLive: false, rawProducts: [] as PrestashopProduct[] };
+  if (isError || !psProducts?.length) return { products: mockProducts, isLoading: false, isLive: false, rawProducts: [] as PrestashopProduct[] };
 
   const liveProducts = psProducts.map(toLocalProduct);
-  return { products: liveProducts, isLoading: false, isLive: true };
+  return { products: liveProducts, isLoading: false, isLive: true, rawProducts: psProducts };
 }
+
+/** Hook that returns a single product by slug — with raw PrestaShop data for combinations */
+export function useProductBySlug(slug: string) {
+  const { products, isLoading, isLive, rawProducts } = useCatalogProducts();
+
+  const product = products.find((p) => p.slug === slug) || null;
+  const rawProduct = rawProducts.find((p) => p.slug === slug) || null;
+
+  return { product, rawProduct, isLoading, isLive };
+}
+
+export { toLocalProduct, colorToHex, extractCapacity };
