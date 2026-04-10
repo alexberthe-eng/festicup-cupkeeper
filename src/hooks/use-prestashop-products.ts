@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { type Product, products as mockProducts } from "@/data/products";
 import { useI18n } from "@/contexts/I18nContext";
 
