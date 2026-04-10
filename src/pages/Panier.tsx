@@ -226,6 +226,7 @@ const Panier = () => {
                   ) : (
                     <>
                       <Button
+                        onClick={() => navigate("/checkout")}
                         className="w-full bg-festicup-dark hover:bg-festicup-dark/90 text-white gap-2"
                       >
                         <ShoppingBag className="w-4 h-4" />
