@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { useCart } from "@/contexts/CartContext";
 
 const navLinks = [
   { label: "Achat", href: "/achat" },
@@ -11,7 +11,7 @@ const navLinks = [
 ];
 
 const Header = () => {
-  const [cartCount] = useState(0);
+  const { itemCount } = useCart();
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border">
@@ -56,9 +56,9 @@ const Header = () => {
           </Link>
           <Link to="/panier" className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label="Panier">
             <ShoppingBag className="w-[18px] h-[18px]" />
-            {cartCount > 0 && (
+            {itemCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 bg-festicup-gold text-primary-foreground text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                {cartCount}
+                {itemCount}
               </span>
             )}
           </Link>

@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Minus, Plus, ShoppingBag, FileText, AlertTriangle, ChevronLeft, Check, Truck, RotateCcw, Shield } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -361,10 +363,14 @@ const ProductConfigurator = ({ product }: ConfiguratorProps) => {
                 Demander un devis personnalisé
               </Button>
             ) : (
-              <Button className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-lg h-12 text-sm font-semibold gap-2">
-                <ShoppingBag className="w-4 h-4" />
-                {mode === "location" ? "Ajouter au panier (location)" : "Ajouter au panier"}
-              </Button>
+              <AddToCartButton
+                product={product}
+                qty={quantity}
+                mode={mode}
+                color={selectedColor || ""}
+                customText={customText}
+                withLogo={customLogo}
+              />
             )}
 
             {!isQuote && (
@@ -398,6 +404,31 @@ const ProductConfigurator = ({ product }: ConfiguratorProps) => {
         </div>
       </div>
     </div>
+  );
+};
+
+// ─── Add to Cart Button ──────────────────────────────────────
+const AddToCartButton = ({ product, qty, mode, color, customText, withLogo }: {
+  product: Product; qty: number; mode: "achat" | "location"; color: string; customText: string; withLogo: boolean;
+}) => {
+  const { addItem } = useCart();
+  const navigate = useNavigate();
+
+  const handleAdd = () => {
+    addItem({ product, qty, mode, color, customText, withLogo });
+    toast.success(`${product.name} ajouté au panier`, {
+      action: { label: "Voir le panier", onClick: () => navigate("/panier") },
+    });
+  };
+
+  return (
+    <Button
+      onClick={handleAdd}
+      className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-lg h-12 text-sm font-semibold gap-2"
+    >
+      <ShoppingBag className="w-4 h-4" />
+      {mode === "location" ? "Ajouter au panier (location)" : "Ajouter au panier"}
+    </Button>
   );
 };
 
