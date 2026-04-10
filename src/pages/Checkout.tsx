@@ -120,7 +120,7 @@ const Checkout = () => {
         throw new Error(data.error || "Payment creation failed");
       }
 
-      // Redirect to Mollie checkout
+      // Redirect to Stripe Checkout
       if (data.checkoutUrl) {
         clearCart();
         window.location.href = data.checkoutUrl;
@@ -335,9 +335,9 @@ const Checkout = () => {
 
                   <div className="mt-4 space-y-2">
                     {[
-                      { icon: Lock, text: "Paiement 100% sécurisé via Mollie" },
+                      { icon: Lock, text: "Paiement 100% sécurisé via Stripe" },
                       { icon: Truck, text: "Livraison express 24-48h" },
-                      { icon: ShieldCheck, text: "Bancontact · CB · iDEAL · PayPal" },
+                      { icon: ShieldCheck, text: "Bancontact · CB · iDEAL" },
                     ].map(({ icon: Icon, text }) => (
                       <div key={text} className="flex items-center gap-2 text-[11px] text-muted-foreground">
                         <Icon className="w-3.5 h-3.5 text-festicup-gold flex-shrink-0" />
