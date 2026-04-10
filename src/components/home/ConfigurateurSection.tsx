@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext";
 
 const ConfigurateurSection = () => {
   const { t } = useI18n();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<"achat" | "location">("achat");
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [attendees, setAttendees] = useState(200);
@@ -48,7 +50,15 @@ const ConfigurateurSection = () => {
             <input type="number" value={attendees} onChange={(e) => setAttendees(Math.max(25, Number(e.target.value)))} className="w-20 text-center text-xl font-bold bg-transparent border-none outline-none font-sans" min={25} />
             <button onClick={() => setAttendees(attendees + 50)} className="w-9 h-9 rounded-full border border-border flex items-center justify-center hover:bg-secondary transition-colors" aria-label="+"><Plus className="w-3.5 h-3.5" /></button>
           </div>
-          <Button className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-lg h-11 text-sm font-medium">{t("config.continue")}</Button>
+          <Button
+            className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-lg h-11 text-sm font-medium"
+            onClick={() => {
+              const params = new URLSearchParams({ event: selectedEvent || "", attendees: attendees.toString() });
+              navigate(attendees > 500 ? `/devis?${params}` : `/${mode}?${params}`);
+            }}
+          >
+            {t("config.continue")}
+          </Button>
         </div>
       </div>
     </section>
