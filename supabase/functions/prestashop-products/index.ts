@@ -126,8 +126,8 @@ async function fetchCombinations(
       return {
         id: String(c.id),
         reference: c.reference || "",
-        price: parseFloat(c.price) || 0, // price impact (can be positive or negative)
-        quantity: parseInt(c.quantity) || 0,
+        price: parseFloat(c.price) || 0,
+        minQty: parseInt(c.minimal_quantity) || 1,
         attributes,
       };
     });
