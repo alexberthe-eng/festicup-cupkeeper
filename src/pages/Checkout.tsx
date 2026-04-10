@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2, Lock, Truck, ShieldCheck } from "lucide-react";
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
@@ -7,14 +7,41 @@ import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useI18n } from "@/contexts/I18nContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { formatPrice, getPriceForQty, TVA_RATE } from "@/data/products";
 
 const Checkout = () => {
   const { items, totalHT, totalTTC, clearCart } = useCart();
   const navigate = useNavigate();
   const { t } = useI18n();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Pre-fill from profile if logged in
+  useEffect(() => {
+    if (!user) return;
+    const loadProfile = async () => {
+      const { data } = await supabase.from("profiles").select("*").eq("user_id", user.id).single();
+      if (data) {
+        setForm((prev) => ({
+          ...prev,
+          name: data.display_name || prev.name,
+          phone: data.phone || prev.phone,
+          company: data.company || prev.company,
+          email: user.email || prev.email,
+          ...((data.default_address as any)?.street ? {
+            street: (data.default_address as any).street,
+            city: (data.default_address as any).city || prev.city,
+            postalCode: (data.default_address as any).postalCode || prev.postalCode,
+            country: (data.default_address as any).country || prev.country,
+          } : {}),
+        }));
+      }
+    };
+    loadProfile();
+  }, [user]);
 
   const [form, setForm] = useState({
     name: "",
