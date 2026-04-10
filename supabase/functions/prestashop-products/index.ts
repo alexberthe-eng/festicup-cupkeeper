@@ -192,9 +192,9 @@ async function getProducts(baseUrl: string, apiKey: string, langId: string) {
           .map((c) => ({
             combinationId: c.id,
             reference: c.reference,
-            priceHT: priceHT + c.price, // base + impact
+            priceHT: priceHT + c.price,
             attributes: c.attributes,
-            stock: c.quantity,
+            minQty: c.minQty,
           }));
 
         return {
