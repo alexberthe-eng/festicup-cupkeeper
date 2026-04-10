@@ -44,23 +44,11 @@ async function getProducts(baseUrl: string, apiKey: string) {
 
   const products = data.products || [];
 
-  const enriched = await Promise.all(
-    products.map(async (p: any) => {
-      let imageUrl = "";
-      try {
-        const imgData = await fetchPS(baseUrl, apiKey, `images/products/${p.id}`, {});
-        if (imgData?.image?.declination) {
-          const firstImg = Array.isArray(imgData.image.declination)
-            ? imgData.image.declination[0]
-            : imgData.image.declination;
-          const imgId = firstImg?.["@attributes"]?.id || firstImg?.id;
-          if (imgId) {
-            imageUrl = `${baseUrl}/api/images/products/${p.id}/${imgId}?ws_key=${apiKey}`;
-          }
-        }
-      } catch {
-        // No image available
-      }
+  const enriched = products.map((p: any) => {
+      const imgId = p.id_default_image;
+      const imageUrl = imgId && imgId !== "0" && imgId !== ""
+        ? `${baseUrl}/api/images/products/${p.id}/${imgId}?ws_key=${apiKey}`
+        : "";
 
       const name = extractLang(p.name);
       const shortDesc = extractLang(p.description_short)?.replace(/<[^>]*>/g, "") || "";
@@ -75,8 +63,7 @@ async function getProducts(baseUrl: string, apiKey: string) {
         image: imageUrl,
         active: p.active === "1",
       };
-    })
-  );
+    });
 
   return enriched;
 }
