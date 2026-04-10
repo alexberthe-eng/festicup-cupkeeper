@@ -88,8 +88,8 @@ async function fetchOptionValues(baseUrl: string, apiKey: string, langId: string
 interface Combination {
   id: string;
   reference: string;
-  price: number; // impact on base price
-  quantity: number;
+  price: number;
+  minQty: number;
   attributes: { group: string; name: string }[];
 }
 
