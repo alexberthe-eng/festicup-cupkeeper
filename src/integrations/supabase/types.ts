@@ -28,6 +28,7 @@ export type Database = {
           mollie_payment_id: string | null
           notes: string | null
           order_number: string
+          prestashop_order_id: number | null
           status: string
           total_ht: number
           total_ttc: number
@@ -47,6 +48,7 @@ export type Database = {
           mollie_payment_id?: string | null
           notes?: string | null
           order_number?: string
+          prestashop_order_id?: number | null
           status?: string
           total_ht?: number
           total_ttc?: number
@@ -66,6 +68,7 @@ export type Database = {
           mollie_payment_id?: string | null
           notes?: string | null
           order_number?: string
+          prestashop_order_id?: number | null
           status?: string
           total_ht?: number
           total_ttc?: number
