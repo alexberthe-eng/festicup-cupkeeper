@@ -120,7 +120,7 @@ const Checkout = () => {
         throw new Error(data.error || "Payment creation failed");
       }
 
-      // Redirect to Mollie checkout
+      // Redirect to Stripe Checkout
       if (data.checkoutUrl) {
         clearCart();
         window.location.href = data.checkoutUrl;

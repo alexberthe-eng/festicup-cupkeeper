@@ -1,10 +1,11 @@
-// Edge function: create-payment — creates order + Mollie payment
+// Edge function: create-payment — creates order + Stripe Checkout Session
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 interface CartItem {
   productId: string;
@@ -44,15 +45,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const MOLLIE_API_KEY = Deno.env.get("MOLLIE_API_KEY");
-    if (!MOLLIE_API_KEY) {
-      throw new Error("MOLLIE_API_KEY not configured");
-    }
+    const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY not configured");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-12-18.acacia" });
 
     const body: CheckoutBody = await req.json();
 
@@ -85,51 +85,40 @@ Deno.serve(async (req) => {
       throw new Error(`Failed to create order: ${orderError.message}`);
     }
 
-    // Build line items description
-    const description = body.items
-      .map((i) => `${i.productName} x${i.qty}`)
-      .join(", ");
-
-    // Determine webhook URL
-    const webhookUrl = `${SUPABASE_URL}/functions/v1/mollie-webhook`;
-
-    // Create Mollie payment
-    const mollieRes = await fetch("https://api.mollie.com/v2/payments", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${MOLLIE_API_KEY}`,
-        "Content-Type": "application/json",
+    // Build Stripe line items
+    const lineItems = body.items.map((item) => ({
+      price_data: {
+        currency: "eur",
+        product_data: {
+          name: item.productName,
+          metadata: { productId: item.productId, mode: item.mode },
+        },
+        // Stripe expects amounts in cents, unit_amount is price TTC per unit
+        unit_amount: Math.round(item.unitPriceHT * 1.21 * 100),
       },
-      body: JSON.stringify({
-        amount: {
-          currency: "EUR",
-          value: body.totalTTC.toFixed(2),
-        },
-        description: `Festicup ${order.order_number} — ${description.substring(0, 120)}`,
-        redirectUrl: `${body.redirectUrl}?order=${order.id}`,
-        webhookUrl,
-        metadata: {
-          order_id: order.id,
-          order_number: order.order_number,
-        },
-        method: ["bancontact", "creditcard", "ideal", "paypal"],
-      }),
+      quantity: item.qty,
+    }));
+
+    // Create Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card", "bancontact", "ideal"],
+      mode: "payment",
+      customer_email: body.customer.email,
+      line_items: lineItems,
+      metadata: {
+        order_id: order.id,
+        order_number: order.order_number,
+      },
+      success_url: `${body.redirectUrl}?order=${order.id}`,
+      cancel_url: `${body.redirectUrl}?order=${order.id}`,
     });
 
-    if (!mollieRes.ok) {
-      const errBody = await mollieRes.text();
-      console.error("Mollie error:", errBody);
-      throw new Error(`Mollie payment creation failed [${mollieRes.status}]: ${errBody}`);
-    }
-
-    const molliePayment = await mollieRes.json();
-
-    // Update order with Mollie payment ID
+    // Update order with Stripe session ID
     await supabase
       .from("orders")
       .update({
-        mollie_payment_id: molliePayment.id,
-        mollie_checkout_url: molliePayment._links?.checkout?.href || null,
+        mollie_payment_id: session.id,
+        mollie_checkout_url: session.url || null,
       })
       .eq("id", order.id);
 
@@ -137,8 +126,8 @@ Deno.serve(async (req) => {
       JSON.stringify({
         orderId: order.id,
         orderNumber: order.order_number,
-        checkoutUrl: molliePayment._links?.checkout?.href,
-        paymentId: molliePayment.id,
+        checkoutUrl: session.url,
+        sessionId: session.id,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

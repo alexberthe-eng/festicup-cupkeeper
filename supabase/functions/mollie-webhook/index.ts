@@ -1,5 +1,6 @@
-// Edge function: mollie-webhook — handles Mollie payment status updates
+// Edge function: stripe-webhook — handles Stripe payment status updates
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,77 +13,87 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const MOLLIE_API_KEY = Deno.env.get("MOLLIE_API_KEY");
-    if (!MOLLIE_API_KEY) throw new Error("MOLLIE_API_KEY not configured");
+    const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY not configured");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-12-18.acacia" });
 
-    // Mollie sends form-urlencoded body with `id` field
-    const formData = await req.formData();
-    const paymentId = formData.get("id") as string;
+    const body = await req.text();
+    const sig = req.headers.get("stripe-signature");
 
-    if (!paymentId) {
-      return new Response("Missing payment id", { status: 400 });
+    let event: Stripe.Event;
+
+    // If we have a webhook signing secret, verify the signature
+    const STRIPE_WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    if (STRIPE_WEBHOOK_SECRET && sig) {
+      event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET);
+    } else {
+      // Fallback: parse body directly (for testing or if no webhook secret configured)
+      event = JSON.parse(body) as Stripe.Event;
     }
 
-    console.log(`Webhook received for payment: ${paymentId}`);
+    console.log(`Stripe webhook received: ${event.type}`);
 
-    // Fetch payment details from Mollie
-    const mollieRes = await fetch(`https://api.mollie.com/v2/payments/${paymentId}`, {
-      headers: { "Authorization": `Bearer ${MOLLIE_API_KEY}` },
-    });
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const orderId = session.metadata?.order_id;
 
-    if (!mollieRes.ok) {
-      const errBody = await mollieRes.text();
-      console.error(`Mollie fetch error [${mollieRes.status}]:`, errBody);
-      return new Response("Failed to fetch payment", { status: 500 });
-    }
+      if (!orderId) {
+        console.error("No order_id in session metadata");
+        return new Response("OK", { status: 200 });
+      }
 
-    const payment = await mollieRes.json();
-    const mollieStatus = payment.status; // paid, failed, cancelled, expired, open, pending
+      const paymentStatus = session.payment_status; // "paid", "unpaid", "no_payment_required"
+      let orderStatus = "pending";
+      if (paymentStatus === "paid") orderStatus = "paid";
 
-    // Map Mollie status to our order status
-    let orderStatus = "pending";
-    if (mollieStatus === "paid") orderStatus = "paid";
-    else if (mollieStatus === "cancelled" || mollieStatus === "expired" || mollieStatus === "failed") orderStatus = "cancelled";
+      const { data: updatedOrders, error } = await supabase
+        .from("orders")
+        .update({
+          status: orderStatus,
+          mollie_payment_id: session.payment_intent as string || session.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", orderId)
+        .select("id");
 
-    // Update order and get the order ID
-    const { data: updatedOrders, error } = await supabase
-      .from("orders")
-      .update({
-        status: orderStatus,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("mollie_payment_id", paymentId)
-      .select("id");
+      if (error) {
+        console.error("Order update error:", error);
+        return new Response("Database update failed", { status: 500 });
+      }
 
-    if (error) {
-      console.error("Order update error:", error);
-      return new Response("Database update failed", { status: 500 });
-    }
+      console.log(`Order ${orderId} updated to ${orderStatus}`);
 
-    console.log(`Order updated: payment=${paymentId}, status=${orderStatus}`);
-
-    // If payment succeeded, sync order to PrestaShop
-    if (orderStatus === "paid" && updatedOrders?.length > 0) {
-      const orderId = updatedOrders[0].id;
-      console.log(`Triggering PrestaShop sync for order ${orderId}...`);
-      try {
-        const syncRes = await fetch(`${SUPABASE_URL}/functions/v1/sync-order-to-prestashop`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ orderId }),
-        });
-        const syncData = await syncRes.json();
-        console.log(`PrestaShop sync result:`, syncData);
-      } catch (syncErr) {
-        // Don't fail the webhook if PS sync fails — log and continue
-        console.error("PrestaShop sync failed (non-blocking):", syncErr);
+      // If payment succeeded, sync order to PrestaShop
+      if (orderStatus === "paid" && updatedOrders?.length > 0) {
+        console.log(`Triggering PrestaShop sync for order ${orderId}...`);
+        try {
+          const syncRes = await fetch(`${SUPABASE_URL}/functions/v1/sync-order-to-prestashop`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ orderId }),
+          });
+          const syncData = await syncRes.json();
+          console.log(`PrestaShop sync result:`, syncData);
+        } catch (syncErr) {
+          console.error("PrestaShop sync failed (non-blocking):", syncErr);
+        }
+      }
+    } else if (event.type === "checkout.session.expired") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const orderId = session.metadata?.order_id;
+      if (orderId) {
+        await supabase
+          .from("orders")
+          .update({ status: "cancelled", updated_at: new Date().toISOString() })
+          .eq("id", orderId);
+        console.log(`Order ${orderId} cancelled (session expired)`);
       }
     }
 
