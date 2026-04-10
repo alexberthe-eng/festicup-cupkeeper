@@ -1,4 +1,4 @@
-// PrestaShop products edge function
+// PrestaShop products edge function v3
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -38,45 +38,32 @@ function extractLang(field: any): string {
 
 async function getProducts(baseUrl: string, apiKey: string) {
   const data = await fetchPS(baseUrl, apiKey, "products", {
-    "display": "[id,name,description_short,price,reference,active,id_category_default,associations]",
+    "display": "[id,name,description_short,price,reference,active,id_category_default,id_default_image]",
     "filter[active]": "1",
   });
 
   const products = data.products || [];
 
-  const enriched = await Promise.all(
-    products.map(async (p: any) => {
-      let imageUrl = "";
-      try {
-        const imgData = await fetchPS(baseUrl, apiKey, `images/products/${p.id}`, {});
-        if (imgData?.image?.declination) {
-          const firstImg = Array.isArray(imgData.image.declination)
-            ? imgData.image.declination[0]
-            : imgData.image.declination;
-          const imgId = firstImg?.["@attributes"]?.id || firstImg?.id;
-          if (imgId) {
-            imageUrl = `${baseUrl}/api/images/products/${p.id}/${imgId}?ws_key=${apiKey}`;
-          }
-        }
-      } catch {
-        // No image available
-      }
+  const enriched = products.map((p: any) => {
+    const imgId = p.id_default_image;
+    const imageUrl = imgId && imgId !== "0" && imgId !== ""
+      ? `${baseUrl}/api/images/products/${p.id}/${imgId}?ws_key=${apiKey}`
+      : "";
 
-      const name = extractLang(p.name);
-      const shortDesc = extractLang(p.description_short)?.replace(/<[^>]*>/g, "") || "";
+    const name = extractLang(p.name);
+    const shortDesc = extractLang(p.description_short)?.replace(/<[^>]*>/g, "") || "";
 
-      return {
-        id: String(p.id),
-        name,
-        shortDesc,
-        priceHT: parseFloat(p.price) || 0,
-        reference: p.reference || "",
-        categoryId: p.id_category_default,
-        image: imageUrl,
-        active: p.active === "1",
-      };
-    })
-  );
+    return {
+      id: String(p.id),
+      name,
+      shortDesc,
+      priceHT: parseFloat(p.price) || 0,
+      reference: p.reference || "",
+      categoryId: p.id_category_default,
+      image: imageUrl,
+      active: p.active === "1",
+    };
+  });
 
   return enriched;
 }
