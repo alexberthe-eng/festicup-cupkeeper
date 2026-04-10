@@ -106,13 +106,6 @@ function extractCapacity(name: string): string {
 }
 
 async function fetchPrestashopProducts(langId: string): Promise<PrestashopProduct[]> {
-  const { data, error } = await supabase.functions.invoke("prestashop-products", {
-    body: null,
-    headers: {},
-  });
-
-  // Pass lang as query param by constructing the URL manually
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
