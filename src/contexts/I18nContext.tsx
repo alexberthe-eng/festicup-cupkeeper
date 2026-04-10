@@ -68,6 +68,7 @@ type TranslationEntry = Record<Locale, string>;
 
 const translations: Record<string, TranslationEntry> = {
   // ── Header / Nav ──
+  "nav.home": { fr: "Accueil", nl: "Home", en: "Home" },
   "nav.achat": { fr: "Achat", nl: "Aankoop", en: "Purchase" },
   "nav.location": { fr: "Location", nl: "Verhuur", en: "Rental" },
   "nav.pro": { fr: "Nos solutions PRO", nl: "Onze PRO oplossingen", en: "Our PRO solutions" },
