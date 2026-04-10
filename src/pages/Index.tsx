@@ -11,9 +11,9 @@ import AvisSection from "@/components/home/AvisSection";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <Header />
-      <main className="flex-1">
+      <main>
         <HeroSection />
         <GammesSection />
         <ConfigurateurSection />
@@ -24,7 +24,7 @@ const Index = () => {
         <AvisSection />
       </main>
       <Footer />
-    </div>
+    </>
   );
 };
 
