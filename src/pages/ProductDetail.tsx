@@ -407,4 +407,29 @@ const ProductConfigurator = ({ product }: ConfiguratorProps) => {
   );
 };
 
+// ─── Add to Cart Button ──────────────────────────────────────
+const AddToCartButton = ({ product, qty, mode, color, customText, withLogo }: {
+  product: Product; qty: number; mode: "achat" | "location"; color: string; customText: string; withLogo: boolean;
+}) => {
+  const { addItem } = useCart();
+  const navigate = useNavigate();
+
+  const handleAdd = () => {
+    addItem({ product, qty, mode, color, customText, withLogo });
+    toast.success(`${product.name} ajouté au panier`, {
+      action: { label: "Voir le panier", onClick: () => navigate("/panier") },
+    });
+  };
+
+  return (
+    <Button
+      onClick={handleAdd}
+      className="w-full bg-foreground hover:bg-foreground/90 text-background rounded-lg h-12 text-sm font-semibold gap-2"
+    >
+      <ShoppingBag className="w-4 h-4" />
+      {mode === "location" ? "Ajouter au panier (location)" : "Ajouter au panier"}
+    </Button>
+  );
+};
+
 export default ProductDetail;
