@@ -30,15 +30,22 @@ const Commandes = () => {
 
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("orders")
-      .select("id, order_number, status, total_ttc, items, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setOrders(data || []);
-        setLoading(false);
-      });
+
+    const fetchOrders = async () => {
+      // Auto-link orphan orders matching user email
+      await supabase.rpc("link_orders_to_user");
+
+      const { data } = await supabase
+        .from("orders")
+        .select("id, order_number, status, total_ttc, items, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      setOrders(data || []);
+      setLoading(false);
+    };
+
+    fetchOrders();
   }, [user]);
 
   if (authLoading || loading) {

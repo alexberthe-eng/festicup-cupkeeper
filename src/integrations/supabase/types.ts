@@ -115,7 +115,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      link_orders_to_user: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
