@@ -186,6 +186,30 @@ const translations: Record<string, TranslationEntry> = {
     en: "It is automatically released upon the first scan of your return package. No action needed.",
   },
 
+  // Steps Achat
+  "simple.achat.step1.title": { fr: "Choisissez vos gobelets", nl: "Kies uw bekers", en: "Choose your cups" },
+  "simple.achat.step1.desc": { fr: "Ainsi que la date de la location et la quantité", nl: "Evenals de huurdatum en hoeveelheid", en: "As well as rental date and quantity" },
+  "simple.achat.step2.title": { fr: "Payer en ligne", nl: "Online betalen", en: "Pay online" },
+  "simple.achat.step2.desc": { fr: "Caution préautorisée, jamais débitée", nl: "Vooraf geautoriseerde borg, nooit afgeschreven", en: "Pre-authorized deposit, never charged" },
+  "simple.achat.step3.title": { fr: "Recevez votre colis", nl: "Ontvang uw pakket", en: "Receive your package" },
+  "simple.achat.step3.desc": { fr: "Avec étiquette retour incluse", nl: "Met retourlabel inbegrepen", en: "With return label included" },
+  "simple.achat.step4.title": { fr: "Rappel automatique", nl: "Automatische herinnering", en: "Automatic reminder" },
+  "simple.achat.step4.desc": { fr: "2 jours avant la fin de votre location", nl: "2 dagen voor het einde van uw huur", en: "2 days before your rental ends" },
+  "simple.achat.step5.title": { fr: "Déposez le colis", nl: "Lever het pakket in", en: "Drop off the package" },
+  "simple.achat.step5.desc": { fr: "Caution libérée au scan du transporteur", nl: "Borg vrijgegeven bij scan van de vervoerder", en: "Deposit released upon carrier scan" },
+
+  // Steps Location
+  "simple.location.step1.title": { fr: "Choisissez vos gobelets", nl: "Kies uw bekers", en: "Choose your cups" },
+  "simple.location.step1.desc": { fr: "Sélectionnez les modèles et la quantité souhaitée", nl: "Selecteer de modellen en gewenste hoeveelheid", en: "Select models and desired quantity" },
+  "simple.location.step2.title": { fr: "Configurez votre location", nl: "Configureer uw verhuur", en: "Configure your rental" },
+  "simple.location.step2.desc": { fr: "Dates, impression et personnalisation", nl: "Data, druk en personalisatie", en: "Dates, printing and customization" },
+  "simple.location.step3.title": { fr: "Recevez votre colis", nl: "Ontvang uw pakket", en: "Receive your package" },
+  "simple.location.step3.desc": { fr: "Livraison express avec étiquette retour", nl: "Express levering met retourlabel", en: "Express delivery with return label" },
+  "simple.location.step4.title": { fr: "Profitez de votre événement", nl: "Geniet van uw evenement", en: "Enjoy your event" },
+  "simple.location.step4.desc": { fr: "Des gobelets premium pour tous vos invités", nl: "Premium bekers voor al uw gasten", en: "Premium cups for all your guests" },
+  "simple.location.step5.title": { fr: "Renvoyez le colis", nl: "Stuur het pakket terug", en: "Send back the package" },
+  "simple.location.step5.desc": { fr: "Retour simple et gratuit", nl: "Eenvoudige en gratis retour", en: "Simple and free return" },
+
   // ── Configurateur ──
   "config.title": { fr: "Votre évènement, nos gobelets", nl: "Uw evenement, onze bekers", en: "Your event, our cups" },
   "config.subtitle": {
