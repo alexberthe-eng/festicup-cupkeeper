@@ -226,11 +226,11 @@ export const QUOTE_THRESHOLD = 500;
 export const QUOTE_WARNING_PERCENT = 0.8;
 
 export function getBasePrice(product: Product): number {
-  return product.priceTiers[0].priceHT;
+  return product.priceTiers.length > 0 ? product.priceTiers[0].priceHT : 0;
 }
 
 export function getBestPrice(product: Product): number {
-  return product.priceTiers[product.priceTiers.length - 1].priceHT;
+  return product.priceTiers.length > 0 ? product.priceTiers[product.priceTiers.length - 1].priceHT : 0;
 }
 
 export function formatPrice(price: number): string {

@@ -1,8 +1,5 @@
-// PrestaShop products edge function v4 — with French language + category enrichment
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// PrestaShop products edge function v5 — with combinations (sizes/colors) + price tiers
+import { corsHeaders } from "@supabase/supabase-js/cors";
 
 async function fetchPS(baseUrl: string, apiKey: string, resource: string, params: Record<string, string> = {}) {
   const url = new URL(`${baseUrl}/api/${resource}`);
@@ -37,7 +34,6 @@ function extractLang(field: any, langId = "1"): string {
 }
 
 // Category mapping for Festicup PrestaShop
-// 12 = Location (rental-only), 13 = Premium wine/champagne, 14 = Ecocup, 15 = Cocktail/beer premium, 16 = Accessories
 function mapCategory(categoryId: string): { gamme: string; mode: string } {
   switch (categoryId) {
     case "12": return { gamme: "ecocup", mode: "location" };
@@ -49,50 +45,175 @@ function mapCategory(categoryId: string): { gamme: string; mode: string } {
   }
 }
 
-async function getProducts(baseUrl: string, apiKey: string) {
-  // Fetch products — use language=1 for French
+/** Fetch all product option values (colors, sizes, etc.) and build a lookup */
+async function fetchOptionValues(baseUrl: string, apiKey: string, langId: string) {
+  const lookup: Record<string, { name: string; group: string }> = {};
+
+  try {
+    // Fetch option value names
+    const valuesData = await fetchPS(baseUrl, apiKey, "product_option_values", {
+      display: "[id,name,id_attribute_group]",
+      language: langId,
+    });
+
+    const values = valuesData?.product_option_values || [];
+
+    // Fetch option group names (e.g. "Couleur", "Taille", "Contenance")
+    const groupsData = await fetchPS(baseUrl, apiKey, "product_options", {
+      display: "[id,name]",
+      language: langId,
+    });
+    const groups = groupsData?.product_options || [];
+    const groupMap: Record<string, string> = {};
+    for (const g of groups) {
+      groupMap[String(g.id)] = extractLang(g.name, langId);
+    }
+
+    for (const v of values) {
+      lookup[String(v.id)] = {
+        name: extractLang(v.name, langId),
+        group: groupMap[String(v.id_attribute_group)] || "",
+      };
+    }
+  } catch (e) {
+    console.warn("Could not fetch option values:", e);
+  }
+
+  return lookup;
+}
+
+interface Combination {
+  id: string;
+  reference: string;
+  price: number; // impact on base price
+  quantity: number;
+  attributes: { group: string; name: string }[];
+}
+
+/** Fetch combinations for a specific product */
+async function fetchCombinations(
+  baseUrl: string,
+  apiKey: string,
+  productId: string,
+  optionLookup: Record<string, { name: string; group: string }>
+): Promise<Combination[]> {
+  try {
+    const data = await fetchPS(baseUrl, apiKey, "combinations", {
+      display: "[id,id_product,reference,price,quantity,associations]",
+      "filter[id_product]": productId,
+    });
+
+    const combos = data?.combinations || [];
+
+    return combos.map((c: any) => {
+      // Extract attribute IDs from associations
+      const attrIds: string[] = [];
+      const assoc = c.associations?.product_option_values;
+      if (Array.isArray(assoc)) {
+        for (const a of assoc) {
+          attrIds.push(String(a.id));
+        }
+      }
+
+      const attributes = attrIds
+        .map((id) => optionLookup[id])
+        .filter(Boolean)
+        .map((ov) => ({ group: ov.group, name: ov.name }));
+
+      return {
+        id: String(c.id),
+        reference: c.reference || "",
+        price: parseFloat(c.price) || 0, // price impact (can be positive or negative)
+        quantity: parseInt(c.quantity) || 0,
+        attributes,
+      };
+    });
+  } catch (e) {
+    console.warn(`Could not fetch combinations for product ${productId}:`, e);
+    return [];
+  }
+}
+
+async function getProducts(baseUrl: string, apiKey: string, langId: string) {
+  // Fetch option values lookup (for colors/sizes)
+  const optionLookup = await fetchOptionValues(baseUrl, apiKey, langId);
+
+  // Fetch products
   const data = await fetchPS(baseUrl, apiKey, "products", {
-    "display": "[id,name,description_short,price,reference,active,id_category_default,id_default_image,link_rewrite,minimal_quantity]",
+    display: "[id,name,description_short,price,reference,active,id_category_default,id_default_image,link_rewrite,minimal_quantity]",
     "filter[active]": "1",
-    "language": "1",
+    language: langId,
   });
 
   const products = data.products || [];
 
-  const enriched = products
-    .filter((p: any) => p.id_category_default !== "2") // Exclude misc/internal category
-    .map((p: any) => {
-      const imgId = p.id_default_image;
-      const imageUrl = imgId && imgId !== "0" && imgId !== ""
-        ? `${baseUrl}/api/images/products/${p.id}/${imgId}?ws_key=${apiKey}`
-        : "";
+  const enriched = await Promise.all(
+    products
+      .filter((p: any) => p.id_category_default !== "2")
+      .map(async (p: any) => {
+        const imgId = p.id_default_image;
+        const imageUrl = imgId && imgId !== "0" && imgId !== ""
+          ? `${baseUrl}/api/images/products/${p.id}/${imgId}?ws_key=${apiKey}`
+          : "";
 
-      const name = extractLang(p.name, "1");
-      const shortDesc = extractLang(p.description_short, "1")?.replace(/<[^>]*>/g, "").trim() || "";
-      const slug = extractLang(p.link_rewrite, "1") || `product-${p.id}`;
+        const name = extractLang(p.name, langId);
+        const shortDesc = extractLang(p.description_short, langId)?.replace(/<[^>]*>/g, "").trim() || "";
+        const slug = extractLang(p.link_rewrite, langId) || `product-${p.id}`;
 
-      const priceHT = parseFloat(p.price) || 0;
-      const categoryId = String(p.id_category_default);
-      const { gamme, mode } = mapCategory(categoryId);
+        const priceHT = parseFloat(p.price) || 0;
+        const categoryId = String(p.id_category_default);
+        const { gamme, mode } = mapCategory(categoryId);
+        const finalMode = priceHT === 0 ? "location" : mode;
 
-      // Rental-only products (category 12) have price=0, so mode is "location"
-      const finalMode = priceHT === 0 ? "location" : mode;
+        // Fetch combinations for this product
+        const combinations = await fetchCombinations(baseUrl, apiKey, String(p.id), optionLookup);
 
-      return {
-        id: String(p.id),
-        slug,
-        name,
-        shortDesc,
-        priceHT,
-        reference: p.reference || "",
-        categoryId,
-        gamme,
-        mode: finalMode,
-        image: imageUrl,
-        active: true,
-        minQty: parseInt(p.minimal_quantity) || 1,
-      };
-    });
+        // Extract unique colors and sizes from combinations
+        const colors: string[] = [];
+        const sizes: string[] = [];
+        for (const combo of combinations) {
+          for (const attr of combo.attributes) {
+            const groupLower = attr.group.toLowerCase();
+            if (groupLower.includes("couleur") || groupLower.includes("color") || groupLower.includes("kleur")) {
+              if (!colors.includes(attr.name)) colors.push(attr.name);
+            }
+            if (groupLower.includes("taille") || groupLower.includes("size") || groupLower.includes("contenance") || groupLower.includes("maat")) {
+              if (!sizes.includes(attr.name)) sizes.push(attr.name);
+            }
+          }
+        }
+
+        // Build price tiers from combinations (different sizes may have different price impacts)
+        const priceTiers = combinations
+          .filter((c) => c.price !== 0 || combinations.length === 1)
+          .map((c) => ({
+            combinationId: c.id,
+            reference: c.reference,
+            priceHT: priceHT + c.price, // base + impact
+            attributes: c.attributes,
+            stock: c.quantity,
+          }));
+
+        return {
+          id: String(p.id),
+          slug,
+          name,
+          shortDesc,
+          priceHT,
+          reference: p.reference || "",
+          categoryId,
+          gamme,
+          mode: finalMode,
+          image: imageUrl,
+          active: true,
+          minQty: parseInt(p.minimal_quantity) || 1,
+          combinations: combinations.length > 0 ? combinations : undefined,
+          colors: colors.length > 0 ? colors : undefined,
+          sizes: sizes.length > 0 ? sizes : undefined,
+          priceTiers: priceTiers.length > 0 ? priceTiers : undefined,
+        };
+      })
+  );
 
   return enriched;
 }
@@ -105,14 +226,8 @@ Deno.serve(async (req) => {
   const PRESTASHOP_API_KEY = Deno.env.get("PRESTASHOP_API_KEY");
   const PRESTASHOP_URL = Deno.env.get("PRESTASHOP_URL");
 
-  if (!PRESTASHOP_API_KEY) {
-    return new Response(JSON.stringify({ error: "PRESTASHOP_API_KEY is not configured" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
-  }
-  if (!PRESTASHOP_URL) {
-    return new Response(JSON.stringify({ error: "PRESTASHOP_URL is not configured" }), {
+  if (!PRESTASHOP_API_KEY || !PRESTASHOP_URL) {
+    return new Response(JSON.stringify({ error: "PRESTASHOP_API_KEY or PRESTASHOP_URL not configured" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
@@ -120,8 +235,12 @@ Deno.serve(async (req) => {
 
   const baseUrl = PRESTASHOP_URL.replace(/\/$/, "");
 
+  // Accept lang param (default: 1 = French)
+  const url = new URL(req.url);
+  const langId = url.searchParams.get("lang") || "1";
+
   try {
-    const products = await getProducts(baseUrl, PRESTASHOP_API_KEY);
+    const products = await getProducts(baseUrl, PRESTASHOP_API_KEY, langId);
     return new Response(JSON.stringify({ products, count: products.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
