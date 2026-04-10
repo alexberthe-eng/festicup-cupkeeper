@@ -1,3 +1,4 @@
+import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import HeroSection from "@/components/home/HeroSection";
@@ -12,6 +13,7 @@ import AvisSection from "@/components/home/AvisSection";
 const Index = () => {
   return (
     <>
+      <AnnouncementBar />
       <Header />
       <main>
         <HeroSection />
