@@ -34,6 +34,7 @@ interface CheckoutBody {
   };
   totalHT: number;
   totalTTC: number;
+  userId?: string | null;
   redirectUrl: string;
 }
 
@@ -74,6 +75,7 @@ Deno.serve(async (req) => {
         total_ht: body.totalHT,
         total_ttc: body.totalTTC,
         status: "pending",
+        user_id: body.userId || null,
       })
       .select("id, order_number")
       .single();
