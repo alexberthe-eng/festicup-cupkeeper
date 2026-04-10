@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
           order_id: order.id,
           order_number: order.order_number,
         },
-        methods: ["bancontact", "creditcard", "ideal", "paypal"],
+        method: ["bancontact", "creditcard", "ideal", "paypal"],
       }),
     });
 
