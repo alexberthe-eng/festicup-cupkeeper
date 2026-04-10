@@ -102,7 +102,7 @@ async function fetchCombinations(
 ): Promise<Combination[]> {
   try {
     const data = await fetchPS(baseUrl, apiKey, "combinations", {
-      display: "[id,id_product,reference,price,quantity,associations]",
+      display: "[id,id_product,reference,price,minimal_quantity,associations]",
       "filter[id_product]": productId,
     });
 
