@@ -1,4 +1,4 @@
-// PrestaShop products edge function v3
+// PrestaShop products edge function v4 — with French language + category enrichment
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -24,46 +24,75 @@ async function fetchPS(baseUrl: string, apiKey: string, resource: string, params
   return res.json();
 }
 
-function extractLang(field: any): string {
+function extractLang(field: any, langId = "1"): string {
   if (typeof field === "string") return field;
   if (Array.isArray(field)) {
-    const fr = field.find((l: any) => l.attrs?.id === "2" || l.id === "2");
-    return fr?.value || field[0]?.value || "";
+    const target = field.find((l: any) => String(l.id) === langId || String(l.attrs?.id) === langId);
+    return target?.value || field[0]?.value || "";
   }
   if (field?.language) {
-    return extractLang(field.language);
+    return extractLang(field.language, langId);
   }
   return field?.value || String(field || "");
 }
 
+// Category mapping for Festicup PrestaShop
+// 12 = Location (rental-only), 13 = Premium wine/champagne, 14 = Ecocup, 15 = Cocktail/beer premium, 16 = Accessories
+function mapCategory(categoryId: string): { gamme: string; mode: string } {
+  switch (categoryId) {
+    case "12": return { gamme: "ecocup", mode: "location" };
+    case "14": return { gamme: "ecocup", mode: "both" };
+    case "13": return { gamme: "prestige", mode: "both" };
+    case "15": return { gamme: "prestige", mode: "both" };
+    case "16": return { gamme: "prestige", mode: "achat" };
+    default: return { gamme: "ecocup", mode: "achat" };
+  }
+}
+
 async function getProducts(baseUrl: string, apiKey: string) {
+  // Fetch products — use language=1 for French
   const data = await fetchPS(baseUrl, apiKey, "products", {
-    "display": "[id,name,description_short,price,reference,active,id_category_default,id_default_image]",
+    "display": "[id,name,description_short,price,reference,active,id_category_default,id_default_image,link_rewrite,minimal_quantity]",
     "filter[active]": "1",
+    "language": "1",
   });
 
   const products = data.products || [];
 
-  const enriched = products.map((p: any) => {
-    const imgId = p.id_default_image;
-    const imageUrl = imgId && imgId !== "0" && imgId !== ""
-      ? `${baseUrl}/api/images/products/${p.id}/${imgId}?ws_key=${apiKey}`
-      : "";
+  const enriched = products
+    .filter((p: any) => p.id_category_default !== "2") // Exclude misc/internal category
+    .map((p: any) => {
+      const imgId = p.id_default_image;
+      const imageUrl = imgId && imgId !== "0" && imgId !== ""
+        ? `${baseUrl}/api/images/products/${p.id}/${imgId}?ws_key=${apiKey}`
+        : "";
 
-    const name = extractLang(p.name);
-    const shortDesc = extractLang(p.description_short)?.replace(/<[^>]*>/g, "") || "";
+      const name = extractLang(p.name, "1");
+      const shortDesc = extractLang(p.description_short, "1")?.replace(/<[^>]*>/g, "").trim() || "";
+      const slug = extractLang(p.link_rewrite, "1") || `product-${p.id}`;
 
-    return {
-      id: String(p.id),
-      name,
-      shortDesc,
-      priceHT: parseFloat(p.price) || 0,
-      reference: p.reference || "",
-      categoryId: p.id_category_default,
-      image: imageUrl,
-      active: p.active === "1",
-    };
-  });
+      const priceHT = parseFloat(p.price) || 0;
+      const categoryId = String(p.id_category_default);
+      const { gamme, mode } = mapCategory(categoryId);
+
+      // Rental-only products (category 12) have price=0, so mode is "location"
+      const finalMode = priceHT === 0 ? "location" : mode;
+
+      return {
+        id: String(p.id),
+        slug,
+        name,
+        shortDesc,
+        priceHT,
+        reference: p.reference || "",
+        categoryId,
+        gamme,
+        mode: finalMode,
+        image: imageUrl,
+        active: true,
+        minQty: parseInt(p.minimal_quantity) || 1,
+      };
+    });
 
   return enriched;
 }
@@ -93,7 +122,7 @@ Deno.serve(async (req) => {
 
   try {
     const products = await getProducts(baseUrl, PRESTASHOP_API_KEY);
-    return new Response(JSON.stringify({ products }), {
+    return new Response(JSON.stringify({ products, count: products.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

@@ -5,7 +5,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import ProductCard from "@/components/catalog/ProductCard";
-import { products } from "@/data/products";
+import { useCatalogProducts } from "@/hooks/use-prestashop-products";
 
 interface CatalogLayoutProps {
   mode: "achat" | "location";
@@ -20,15 +20,17 @@ const CatalogLayout = ({ mode }: CatalogLayoutProps) => {
   );
   const [selectedCapacity, setSelectedCapacity] = useState<string | null>(null);
 
+  const { products, isLoading, isLive } = useCatalogProducts();
+
   // Filter products by mode
   const modeProducts = useMemo(
     () => products.filter((p) => p.mode === "both" || p.mode === mode),
-    [mode]
+    [products, mode]
   );
 
   // Get available capacities
   const capacities = useMemo(() => {
-    const caps = new Set(modeProducts.map((p) => p.capacity));
+    const caps = new Set(modeProducts.map((p) => p.capacity).filter(Boolean));
     return Array.from(caps).sort((a, b) => {
       const numA = parseInt(a);
       const numB = parseInt(b);
@@ -69,6 +71,12 @@ const CatalogLayout = ({ mode }: CatalogLayoutProps) => {
                   ? "Location de gobelets personnalisés pour vos événements. Caution préautorisée, jamais débitée. Retour simple et gratuit."
                   : "Gobelets réutilisables personnalisés pour tous vos événements. Prix dégressifs, commande dès 25 unités. 100% made in France."}
               </p>
+              {isLive && (
+                <span className="inline-flex items-center gap-1.5 mt-3 text-[10px] text-green-400 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  Données en direct depuis PrestaShop
+                </span>
+              )}
             </div>
           </div>
         </section>
@@ -85,18 +93,36 @@ const CatalogLayout = ({ mode }: CatalogLayoutProps) => {
               resultCount={filtered.length}
             />
 
-            {/* Product grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5 mt-6">
-              {filtered.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  catalogMode={mode}
-                />
-              ))}
-            </div>
+            {/* Loading state */}
+            {isLoading && (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5 mt-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="bg-card border border-border rounded-xl overflow-hidden animate-pulse">
+                    <div className="aspect-square bg-muted" />
+                    <div className="p-4 space-y-2">
+                      <div className="h-3 bg-muted rounded w-1/3" />
+                      <div className="h-4 bg-muted rounded w-2/3" />
+                      <div className="h-3 bg-muted rounded w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-            {filtered.length === 0 && (
+            {/* Product grid */}
+            {!isLoading && (
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-5 mt-6">
+                {filtered.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    catalogMode={mode}
+                  />
+                ))}
+              </div>
+            )}
+
+            {!isLoading && filtered.length === 0 && (
               <div className="text-center py-16">
                 <p className="text-muted-foreground text-sm">
                   Aucun produit ne correspond à vos critères.
