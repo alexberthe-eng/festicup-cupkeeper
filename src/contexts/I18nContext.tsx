@@ -361,6 +361,12 @@ const translations: Record<string, TranslationEntry> = {
   "cart.payment": { fr: "Paiement sécurisé (Bancontact/CB)", nl: "Veilige betaling (Bancontact/CB)", en: "Secure payment (Bancontact/CB)" },
   "cart.articles": { fr: "articles", nl: "artikelen", en: "items" },
 
+  // ── Checkout ──
+  "checkout.totalTTC": { fr: "Total TTC", nl: "Totaal incl.", en: "Total incl." },
+  "checkout.street": { fr: "Adresse", nl: "Adres", en: "Address" },
+  "checkout.city": { fr: "Ville", nl: "Stad", en: "City" },
+  "checkout.postalCode": { fr: "Code postal", nl: "Postcode", en: "Postal code" },
+
   // ── Footer ──
   "footer.tagline": {
     fr: "Gobelets réutilisables et verres incassables premium pour tous vos événements.",
