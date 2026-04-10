@@ -1,17 +1,21 @@
 import { Link } from "react-router-dom";
-import { Search, User, ShoppingBag, Menu } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useCart } from "@/contexts/CartContext";
-
-const navLinks = [
-  { label: "Achat", href: "/achat" },
-  { label: "Location", href: "/location" },
-  { label: "Nos solutions PRO", href: "/pro" },
-];
+import { useI18n, LOCALES } from "@/contexts/I18nContext";
 
 const Header = () => {
   const { itemCount } = useCart();
+  const { locale, setLocale, t } = useI18n();
+  const currentLocale = LOCALES.find((l) => l.value === locale)!;
+
+  const navLinks = [
+    { label: t("nav.achat"), href: "/achat" },
+    { label: t("nav.location"), href: "/location" },
+    { label: t("nav.pro"), href: "/pro" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border">
@@ -45,13 +49,36 @@ const Header = () => {
         <div className="flex items-center gap-1 lg:gap-3">
           <Link to="/devis" className="hidden lg:inline-flex">
             <Button className="bg-festicup-gold hover:bg-festicup-gold-dark text-foreground rounded-full px-5 h-9 text-sm font-medium">
-              Demander un devis
+              {t("nav.devis")}
             </Button>
           </Link>
+
+          {/* Language switcher */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-1 px-2 h-9 rounded-full hover:bg-secondary transition-colors text-xs font-medium" aria-label="Language">
+                <span>{currentLocale.flag}</span>
+                <span className="hidden lg:inline uppercase">{locale}</span>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="min-w-[140px]">
+              {LOCALES.map((l) => (
+                <DropdownMenuItem
+                  key={l.value}
+                  onClick={() => setLocale(l.value)}
+                  className={`flex items-center gap-2 text-xs ${locale === l.value ? "font-bold" : ""}`}
+                >
+                  <span>{l.flag}</span>
+                  <span>{l.label}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <button className="hidden lg:flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label="Rechercher">
             <Search className="w-[18px] h-[18px]" />
           </button>
-          <Link to="/compte" className="hidden lg:flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label="Mon compte">
+          <Link to="/compte" className="hidden lg:flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label={t("nav.compte")}>
             <User className="w-[18px] h-[18px]" />
           </Link>
           <Link to="/panier" className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label="Panier">
@@ -66,7 +93,7 @@ const Header = () => {
           {/* Mobile: CTA devis */}
           <Link to="/devis" className="lg:hidden">
             <Button className="bg-festicup-gold hover:bg-festicup-gold-dark text-foreground rounded-full px-4 h-8 text-xs font-medium">
-              Demander un devis
+              {t("nav.devis")}
             </Button>
           </Link>
 
@@ -95,17 +122,38 @@ const Header = () => {
                   <SheetClose asChild>
                     <Link to="/devis">
                       <Button className="w-full bg-festicup-gold hover:bg-festicup-gold-dark text-foreground rounded-full">
-                        Demander un devis
+                        {t("nav.devis")}
                       </Button>
                     </Link>
                   </SheetClose>
                   <SheetClose asChild>
                     <Link to="/compte">
                       <Button variant="outline" className="w-full rounded-full">
-                        Mon compte
+                        {t("nav.compte")}
                       </Button>
                     </Link>
                   </SheetClose>
+                </div>
+                {/* Mobile language switcher */}
+                <div className="mt-6 pt-4 border-t border-border">
+                  <p className="text-xs text-muted-foreground mb-2">Language</p>
+                  <div className="flex gap-2">
+                    {LOCALES.map((l) => (
+                      <SheetClose asChild key={l.value}>
+                        <button
+                          onClick={() => setLocale(l.value)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                            locale === l.value
+                              ? "bg-foreground text-background"
+                              : "bg-secondary text-muted-foreground"
+                          }`}
+                        >
+                          <span>{l.flag}</span>
+                          <span className="uppercase">{l.value}</span>
+                        </button>
+                      </SheetClose>
+                    ))}
+                  </div>
                 </div>
               </div>
             </SheetContent>
