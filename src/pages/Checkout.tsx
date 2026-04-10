@@ -109,6 +109,7 @@ const Checkout = () => {
           },
           totalHT,
           totalTTC,
+          userId: user?.id || null,
           redirectUrl: `${window.location.origin}/confirmation`,
         }),
       });
