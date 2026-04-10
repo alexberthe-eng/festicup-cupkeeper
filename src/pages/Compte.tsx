@@ -243,7 +243,7 @@ const Compte = () => {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(order.created_at).toLocaleDateString()} — {items.length} {t("account.item", { count: items.length })}
+                      {new Date(order.created_at).toLocaleDateString()} — {items.length} {items.length > 1 ? t("account.items") : t("account.item")}
                     </p>
                     <div className="flex items-center justify-between pt-1 border-t border-border">
                       <span className="text-sm text-muted-foreground">{t("checkout.totalTTC")}</span>
