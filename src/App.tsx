@@ -15,7 +15,7 @@ import Panier from "./pages/Panier.tsx";
 import Checkout from "./pages/Checkout.tsx";
 import Confirmation from "./pages/Confirmation.tsx";
 import Auth from "./pages/Auth.tsx";
-import Compte from "./pages/Compte.tsx";
+import { Navigate } from "react-router-dom";
 import ResetPassword from "./pages/ResetPassword.tsx";
 import CompteInfos from "./pages/compte/Infos.tsx";
 import CompteCommandes from "./pages/compte/Commandes.tsx";
@@ -45,7 +45,7 @@ const App = () => (
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/confirmation" element={<Confirmation />} />
                 <Route path="/auth" element={<Auth />} />
-                <Route path="/compte" element={<Compte />} />
+                <Route path="/compte" element={<Navigate to="/compte/infos" replace />} />
                 <Route path="/compte/infos" element={<CompteInfos />} />
                 <Route path="/compte/commandes" element={<CompteCommandes />} />
                 <Route path="/compte/devis" element={<CompteDevis />} />
