@@ -1,29 +1,16 @@
 import { Factory, LayoutGrid, UserCheck, Package } from "lucide-react";
-
-const reassuranceItems = [
-  {
-    icon: Factory,
-    title: "100% made in France",
-    desc: "Fabrication et personnalisation de vos gobelets en France",
-  },
-  {
-    icon: LayoutGrid,
-    title: "Large choix de gamme",
-    desc: "Des gobelets adaptés à tous types d'événements",
-  },
-  {
-    icon: UserCheck,
-    title: "Chargé de client dédié",
-    desc: "Un interlocuteur unique pour votre projet",
-  },
-  {
-    icon: Package,
-    title: "Commande dès 25 unités",
-    desc: "Minimum de commande accessible pour tous",
-  },
-];
+import { useI18n } from "@/contexts/I18nContext";
 
 const ReassuranceDarkSection = () => {
+  const { t } = useI18n();
+
+  const reassuranceItems = [
+    { icon: Factory, title: t("reassurance.france"), desc: t("reassurance.france.desc") },
+    { icon: LayoutGrid, title: t("reassurance.choice"), desc: t("reassurance.choice.desc") },
+    { icon: UserCheck, title: t("reassurance.dedicated"), desc: t("reassurance.dedicated.desc") },
+    { icon: Package, title: t("reassurance.min"), desc: t("reassurance.min.desc") },
+  ];
+
   return (
     <section className="bg-festicup-dark py-10 lg:py-14">
       <div className="container mx-auto px-4 lg:px-8">
