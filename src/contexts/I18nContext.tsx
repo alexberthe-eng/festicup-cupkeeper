@@ -432,4 +432,74 @@ const translations: Record<string, TranslationEntry> = {
   "order.status.pending": { fr: "En attente", nl: "In afwachting", en: "Pending" },
   "order.status.paid": { fr: "Payée", nl: "Betaald", en: "Paid" },
   "order.status.cancelled": { fr: "Annulée", nl: "Geannuleerd", en: "Cancelled" },
+
+  // ── Status badges ──
+  "status.pending": { fr: "En attente", nl: "In afwachting", en: "Pending" },
+  "status.contacted": { fr: "Contacté", nl: "Gecontacteerd", en: "Contacted" },
+  "status.offer_sent": { fr: "Offre envoyée", nl: "Offerte verzonden", en: "Offer sent" },
+  "status.accepted": { fr: "Accepté", nl: "Geaccepteerd", en: "Accepted" },
+  "status.converted": { fr: "Converti", nl: "Geconverteerd", en: "Converted" },
+  "status.expired": { fr: "Expiré", nl: "Verlopen", en: "Expired" },
+  "status.rejected": { fr: "Rejeté", nl: "Afgewezen", en: "Rejected" },
+  "status.paid": { fr: "Payée", nl: "Betaald", en: "Paid" },
+  "status.cancelled": { fr: "Annulée", nl: "Geannuleerd", en: "Cancelled" },
+  "status.preparing": { fr: "En préparation", nl: "In voorbereiding", en: "Preparing" },
+  "status.shipped": { fr: "Expédié", nl: "Verzonden", en: "Shipped" },
+  "status.delivered": { fr: "Livré", nl: "Geleverd", en: "Delivered" },
+
+  // ── NotFound ──
+  "notFound.title": { fr: "Page introuvable", nl: "Pagina niet gevonden", en: "Page not found" },
+  "notFound.subtitle": { fr: "La page que vous recherchez n'existe pas ou a été déplacée.", nl: "De pagina die u zoekt bestaat niet of is verplaatst.", en: "The page you're looking for doesn't exist or has been moved." },
+  "notFound.home": { fr: "Retour à l'accueil", nl: "Terug naar home", en: "Back to home" },
+  "notFound.catalog": { fr: "Voir notre catalogue", nl: "Bekijk onze catalogus", en: "View our catalog" },
+
+  // ── Compte layout nav ──
+  "compte.nav.infos": { fr: "Mes informations", nl: "Mijn gegevens", en: "My information" },
+  "compte.nav.commandes": { fr: "Mes commandes", nl: "Mijn bestellingen", en: "My orders" },
+  "compte.nav.devis": { fr: "Mes devis", nl: "Mijn offertes", en: "My quotes" },
+  "compte.nav.adresses": { fr: "Mes adresses", nl: "Mijn adressen", en: "My addresses" },
+
+  // ── Infos page ──
+  "infos.personal": { fr: "Informations personnelles", nl: "Persoonlijke gegevens", en: "Personal information" },
+  "infos.security": { fr: "Sécurité", nl: "Beveiliging", en: "Security" },
+  "infos.newPassword": { fr: "Nouveau mot de passe", nl: "Nieuw wachtwoord", en: "New password" },
+  "infos.changePassword": { fr: "Changer le mot de passe", nl: "Wachtwoord wijzigen", en: "Change password" },
+  "infos.deleteAccount": { fr: "Supprimer mon compte", nl: "Mijn account verwijderen", en: "Delete my account" },
+  "infos.deleteConfirmText": { fr: "Tapez SUPPRIMER pour confirmer la suppression de votre compte.", nl: "Typ SUPPRIMER om de verwijdering te bevestigen.", en: "Type SUPPRIMER to confirm account deletion." },
+  "infos.deleteConfirmPlaceholder": { fr: "Tapez SUPPRIMER", nl: "Typ SUPPRIMER", en: "Type SUPPRIMER" },
+
+  // ── Commandes page ──
+  "commandes.discover": { fr: "Découvrir la gamme", nl: "Ontdek het assortiment", en: "Discover the range" },
+
+  // ── Devis page ──
+  "devisPage.empty": { fr: "Aucun devis pour le moment", nl: "Nog geen offertes", en: "No quotes yet" },
+  "devisPage.request": { fr: "Demander un devis", nl: "Offerte aanvragen", en: "Request a quote" },
+  "devisPage.estimatedValue": { fr: "Valeur estimée", nl: "Geschatte waarde", en: "Estimated value" },
+  "devisPage.viewAccept": { fr: "Voir et accepter", nl: "Bekijken en accepteren", en: "View and accept" },
+  "devisPage.renew": { fr: "Renouveler", nl: "Vernieuwen", en: "Renew" },
+
+  // ── Adresses page ──
+  "adresses.default": { fr: "Par défaut", nl: "Standaard", en: "Default" },
+  "adresses.setDefault": { fr: "Définir par défaut", nl: "Als standaard instellen", en: "Set as default" },
+  "adresses.delete": { fr: "Supprimer", nl: "Verwijderen", en: "Delete" },
+  "adresses.add": { fr: "Ajouter une adresse", nl: "Adres toevoegen", en: "Add address" },
+  "adresses.cancel": { fr: "Annuler", nl: "Annuleren", en: "Cancel" },
+  "adresses.defaultUpdated": { fr: "Adresse par défaut mise à jour", nl: "Standaardadres bijgewerkt", en: "Default address updated" },
+  "adresses.added": { fr: "Adresse ajoutée", nl: "Adres toegevoegd", en: "Address added" },
+
+  // ── Devis Acceptation ──
+  "devisAccept.title": { fr: "Offre", nl: "Offerte", en: "Quote" },
+  "devisAccept.validUntil": { fr: "Valable jusqu'au", nl: "Geldig tot", en: "Valid until" },
+  "devisAccept.product": { fr: "Produit", nl: "Product", en: "Product" },
+  "devisAccept.qty": { fr: "Qté", nl: "Aantal", en: "Qty" },
+  "devisAccept.color": { fr: "Couleur", nl: "Kleur", en: "Color" },
+  "devisAccept.impression": { fr: "Impression", nl: "Bedrukking", en: "Print" },
+  "devisAccept.unitPrice": { fr: "Prix unit.", nl: "Eenheidsprijs", en: "Unit price" },
+  "devisAccept.subtotal": { fr: "Sous-total", nl: "Subtotaal", en: "Subtotal" },
+  "devisAccept.downloadPDF": { fr: "Télécharger le PDF", nl: "PDF downloaden", en: "Download PDF" },
+  "devisAccept.acceptPay": { fr: "Accepter et payer", nl: "Accepteren en betalen", en: "Accept and pay" },
+  "devisAccept.requestChange": { fr: "Demander une modification", nl: "Wijziging aanvragen", en: "Request a change" },
+  "devisAccept.expired": { fr: "Cette offre a expiré", nl: "Deze offerte is verlopen", en: "This offer has expired" },
+  "devisAccept.expiredDesc": { fr: "L'offre n'est plus disponible. Contactez notre équipe pour en obtenir une nouvelle.", nl: "De offerte is niet meer beschikbaar. Neem contact op met ons team.", en: "The offer is no longer available. Contact our team for a new one." },
+  "devisAccept.contact": { fr: "Contacter l'équipe", nl: "Team contacteren", en: "Contact the team" },
 };

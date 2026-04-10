@@ -17,6 +17,11 @@ import Confirmation from "./pages/Confirmation.tsx";
 import Auth from "./pages/Auth.tsx";
 import Compte from "./pages/Compte.tsx";
 import ResetPassword from "./pages/ResetPassword.tsx";
+import CompteInfos from "./pages/compte/Infos.tsx";
+import CompteCommandes from "./pages/compte/Commandes.tsx";
+import CompteDevis from "./pages/compte/Devis.tsx";
+import CompteAdresses from "./pages/compte/Adresses.tsx";
+import DevisAcceptation from "./pages/DevisAcceptation.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -41,7 +46,12 @@ const App = () => (
                 <Route path="/confirmation" element={<Confirmation />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/compte" element={<Compte />} />
+                <Route path="/compte/infos" element={<CompteInfos />} />
+                <Route path="/compte/commandes" element={<CompteCommandes />} />
+                <Route path="/compte/devis" element={<CompteDevis />} />
+                <Route path="/compte/adresses" element={<CompteAdresses />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/devis/accepter/:token" element={<DevisAcceptation />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
