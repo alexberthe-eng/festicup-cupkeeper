@@ -1,14 +1,16 @@
 import { Link } from "react-router-dom";
-import { Search, User, ShoppingBag, Menu, Globe } from "lucide-react";
+import { Search, User, ShoppingBag, Menu, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useCart } from "@/contexts/CartContext";
 import { useI18n, LOCALES } from "@/contexts/I18nContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const { itemCount } = useCart();
   const { locale, setLocale, t } = useI18n();
+  const { user } = useAuth();
   const currentLocale = LOCALES.find((l) => l.value === locale)!;
 
   const navLinks = [
@@ -78,8 +80,8 @@ const Header = () => {
           <button className="hidden lg:flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label="Rechercher">
             <Search className="w-[18px] h-[18px]" />
           </button>
-          <Link to="/compte" className="hidden lg:flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label={t("nav.compte")}>
-            <User className="w-[18px] h-[18px]" />
+          <Link to={user ? "/compte" : "/auth"} className="hidden lg:flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label={t("nav.compte")}>
+            {user ? <User className="w-[18px] h-[18px]" /> : <LogIn className="w-[18px] h-[18px]" />}
           </Link>
           <Link to="/panier" className="relative flex items-center justify-center w-9 h-9 rounded-full hover:bg-secondary transition-colors" aria-label="Panier">
             <ShoppingBag className="w-[18px] h-[18px]" />
@@ -127,9 +129,9 @@ const Header = () => {
                     </Link>
                   </SheetClose>
                   <SheetClose asChild>
-                    <Link to="/compte">
+                    <Link to={user ? "/compte" : "/auth"}>
                       <Button variant="outline" className="w-full rounded-full">
-                        {t("nav.compte")}
+                        {user ? t("nav.compte") : t("auth.loginBtn")}
                       </Button>
                     </Link>
                   </SheetClose>
