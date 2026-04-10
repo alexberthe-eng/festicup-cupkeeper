@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, User, ShoppingBag, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
+import { useCart } from "@/contexts/CartContext";
 
 const navLinks = [
   { label: "Achat", href: "/achat" },
@@ -11,7 +11,7 @@ const navLinks = [
 ];
 
 const Header = () => {
-  const [cartCount] = useState(0);
+  const { itemCount } = useCart();
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border">
